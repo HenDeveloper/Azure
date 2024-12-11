@@ -1,5 +1,3 @@
-name: Build and Configure Windows Pipeline
-
 trigger:
   branches:
     include:
@@ -9,41 +7,30 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  buildConfiguration: 'Release'
-  username: 'HenDev'
-  password: 'HenPremium13'
-  TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)  # Menambahkan variabel TAILSCALE_AUTHKEY langsung di sini
+  TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)
+  USERNAME: 'HenDev'
+  PASSWORD: 'HenDeveloper13'
 
-steps:
-  - task: Checkout@1
-    displayName: 'Checkout repository'
+jobs:
+  - job: Build
+    steps:
+      - task: UseDotNet@2
+        inputs:
+          packageType: 'sdk'
+          version: '7.x'
 
-  - powershell: |
-      net user $(username) $(password) /add
-      net localgroup Administrators $(username) /add
-    displayName: 'Setup user HenDev with Administrator privileges'
+      - script: |
+          $username = "$(USERNAME)"
+          $password = "$(PASSWORD)"
+          $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+          Start-Process 'C:\Windows\System32\cmd.exe' -Credential $cred -ArgumentList "/c echo Hello, World!" -NoNewWindow -Wait
+        displayName: 'Login sebagai Administrator'
 
-  - powershell: |
-      Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup.exe" -OutFile "C:\tailscale-setup.exe"
-      Start-Process -FilePath "C:\tailscale-setup.exe" -ArgumentList '/quiet' -Wait
-      tailscale up --authkey ${env:TAILSCALE_AUTHKEY} --accept-dns
-    displayName: 'Install and Configure Tailscale'
-    env:
-      TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)  # Memastikan variabel tersedia di dalam env
+      - script: |
+          powershell -Command "Start-Process 'C:\Program Files\Tailscale\tailscale.exe' -ArgumentList 'up', '--authkey', '${env:TAILSCALE_AUTHKEY}' -NoNewWindow -Wait"
+        displayName: 'Setup Tailscale dan autentikasi'
 
-  - powershell: |
-      Enable-PSRemoting -Force
-      Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
-      netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
-    displayName: 'Enable Remote Desktop'
-
-  - script: |
-      echo Building project...
-    displayName: 'Build Project Placeholder'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Build Artifacts'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'drop'
-      publishLocation: 'Container'
+      - script: |
+          echo "Menjalankan build di Windows"
+        displayName: 'Menjalankan build'
