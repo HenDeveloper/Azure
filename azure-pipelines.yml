@@ -1,0 +1,46 @@
+name: Build and Configure Windows Pipeline
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  username: 'HenDev'
+  password: 'HenPremium13'
+
+steps:
+  - task: Checkout@1
+    displayName: 'Checkout repository'
+
+  - powershell: |
+      net user $(username) $(password) /add
+      net localgroup Administrators $(username) /add
+    displayName: 'Setup user HenDev with Administrator privileges'
+
+  - powershell: |
+      Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup.exe" -OutFile "C:\tailscale-setup.exe"
+      Start-Process -FilePath "C:\tailscale-setup.exe" -ArgumentList '/quiet' -Wait
+      tailscale up --authkey "your-auth-key" --accept-dns
+    displayName: 'Install and Configure Tailscale'
+
+  - powershell: |
+      Enable-PSRemoting -Force
+      Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+      netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+    displayName: 'Enable Remote Desktop'
+
+  - script: |
+      echo Building project...
+    displayName: 'Build Project Placeholder'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Build Artifacts'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
