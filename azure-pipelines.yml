@@ -19,6 +19,12 @@ jobs:
           packageType: 'sdk'
           version: '7.x'
 
+      - task: Checkout@1
+        inputs:
+          repository: self
+          fetchDepth: 1
+        displayName: 'Checkout repository'
+
       - script: |
           $username = "$(USERNAME)"
           $password = "$(PASSWORD)"
