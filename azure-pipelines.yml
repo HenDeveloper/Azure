@@ -9,6 +9,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
+  - group: TailscaleVariables  # Menghubungkan Variable Group
   buildConfiguration: 'Release'
   username: 'HenDev'
   password: 'HenPremium13'
