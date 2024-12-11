@@ -25,7 +25,7 @@ steps:
   - powershell: |
       Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup.exe" -OutFile "C:\tailscale-setup.exe"
       Start-Process -FilePath "C:\tailscale-setup.exe" -ArgumentList '/quiet' -Wait
-      tailscale up --authkey "$(TAILSCALE_AUTHKEY)" --accept-dns
+      tailscale up --authkey ${env:TAILSCALE_AUTHKEY} --accept-dns
     displayName: 'Install and Configure Tailscale'
     env:
       TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)
