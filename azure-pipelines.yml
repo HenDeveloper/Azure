@@ -9,10 +9,10 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  - group: TailscaleVariables  # Menghubungkan Variable Group
   buildConfiguration: 'Release'
   username: 'HenDev'
   password: 'HenPremium13'
+  TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)  # Menambahkan variabel TAILSCALE_AUTHKEY langsung di sini
 
 steps:
   - task: Checkout@1
@@ -29,7 +29,7 @@ steps:
       tailscale up --authkey ${env:TAILSCALE_AUTHKEY} --accept-dns
     displayName: 'Install and Configure Tailscale'
     env:
-      TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)
+      TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)  # Memastikan variabel tersedia di dalam env
 
   - powershell: |
       Enable-PSRemoting -Force
