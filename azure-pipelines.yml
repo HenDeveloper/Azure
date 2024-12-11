@@ -27,6 +27,8 @@ steps:
       Start-Process -FilePath "C:\tailscale-setup.exe" -ArgumentList '/quiet' -Wait
       tailscale up --authkey "$(TAILSCALE_AUTHKEY)" --accept-dns
     displayName: 'Install and Configure Tailscale'
+    env:
+      TAILSCALE_AUTHKEY: $(TAILSCALE_AUTHKEY)
 
   - powershell: |
       Enable-PSRemoting -Force
